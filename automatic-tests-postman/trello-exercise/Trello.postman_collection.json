@@ -1,0 +1,482 @@
+{
+	"info": {
+		"_postman_id": "4e0dd7e6-a31d-42d4-99f9-2b85c83ba4a9",
+		"name": "Trello",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create board",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"console.log(responseData);\r",
+							"\r",
+							"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"pm.test(\"Board should be created and open\", function () {\r",
+							"    pm.expect(responseData.name).to.eql(pm.environment.get(\"boardName\"));\r",
+							"    pm.expect(responseData.closed).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Board should be private\", function () {\r",
+							"    pm.expect(responseData.prefs.permissionLevel).to.eql(\"private\");\r",
+							"});\r",
+							"\r",
+							"pm.environment.set(\"idBoard\", responseData.id);\r",
+							"\r",
+							"pm.environment.unset(\"boardName\");\r",
+							""
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"function getBoardNameToCreate(nextBoardNumber = 0) {\r",
+							"\tconst boardName = \"Board \" + nextBoardNumber;\r",
+							"\r",
+							"    pm.environment.set(\"nextBoardNumber\", nextBoardNumber + 1);\r",
+							"\r",
+							"    return boardName;\r",
+							"}\r",
+							"\r",
+							"const boardName = getBoardNameToCreate(pm.environment.get(\"nextBoardNumber\"));\r",
+							"\r",
+							"pm.environment.set(\r",
+							"  \"boardName\",\r",
+							"  boardName\r",
+							");\r",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://api.trello.com/1/boards/?name={{boardName}}&key={{trelloKey}}&token={{trelloToken}}&defaultLists=false",
+					"protocol": "https",
+					"host": [
+						"api",
+						"trello",
+						"com"
+					],
+					"path": [
+						"1",
+						"boards",
+						""
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "{{boardName}}"
+						},
+						{
+							"key": "key",
+							"value": "{{trelloKey}}"
+						},
+						{
+							"key": "token",
+							"value": "{{trelloToken}}"
+						},
+						{
+							"key": "defaultLists",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"pm.test(\"List should exist and be open\", () => {\r",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"listName\"));\r",
+							"    pm.expect(jsonData.closed).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"The list is in the board\",() => {\r",
+							"    pm.expect(jsonData.idBoard).to.eql(pm.environment.get(\"idBoard\"));\r",
+							"})\r",
+							"\r",
+							"pm.environment.set(\"idList\", jsonData.id)\r",
+							"\r",
+							"pm.environment.unset(\"listName\");"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const listNumber = pm.environment.get(\"listNumber\") || 0;\r",
+							"\r",
+							"const listName = \"TODO \" + listNumber;\r",
+							"\r",
+							"pm.environment.set(\"listNumber\", listNumber + 1);\r",
+							"\r",
+							"pm.environment.set(\"listName\", listName);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://api.trello.com/1/lists?name={{listName}}&idBoard={{idBoard}}&key={{trelloKey}}&token={{trelloToken}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"trello",
+						"com"
+					],
+					"path": [
+						"1",
+						"lists"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "{{listName}}"
+						},
+						{
+							"key": "idBoard",
+							"value": "{{idBoard}}"
+						},
+						{
+							"key": "key",
+							"value": "{{trelloKey}}"
+						},
+						{
+							"key": "token",
+							"value": "{{trelloToken}}"
+						}
+					]
+				},
+				"description": "Create a list and add it to a existing board"
+			},
+			"response": []
+		},
+		{
+			"name": "Create list 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"List exists and is open\", function () {\r",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"listNameTwo\"));\r",
+							"    pm.expect(jsonData.closed).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"List is in the board\", function() {\r",
+							"    pm.expect(jsonData.idBoard).to.eql(pm.environment.get(\"idBoard\"));\r",
+							"\r",
+							"});\r",
+							"\r",
+							"pm.environment.set(\"doneListId\", jsonData.id);\r",
+							"pm.environment.unset(\"listNameTwo\");"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const numberSaved = pm.environment.get(\"number\") || 0;\r",
+							"\r",
+							"const listNameTwo = \"DONE \" + numberSaved;\r",
+							"\r",
+							"pm.environment.set(\"number\", numberSaved + 1);\r",
+							"\r",
+							"pm.environment.set(\"listNameTwo\", listNameTwo);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://api.trello.com/1/lists?name={{listNameTwo}}&idBoard={{idBoard}}&key={{trelloKey}}&token={{trelloToken}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"trello",
+						"com"
+					],
+					"path": [
+						"1",
+						"lists"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "{{listNameTwo}}"
+						},
+						{
+							"key": "idBoard",
+							"value": "{{idBoard}}"
+						},
+						{
+							"key": "key",
+							"value": "{{trelloKey}}"
+						},
+						{
+							"key": "token",
+							"value": "{{trelloToken}}"
+						}
+					]
+				},
+				"description": "Create a new list in a existing board and check if the new list was added to the desired board"
+			},
+			"response": []
+		},
+		{
+			"name": "Create card on list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Card has the expected name and is open\", function () {\r",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"cardName\"));\r",
+							"    pm.expect(jsonData.closed).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"The card is in board\", function() {\r",
+							"    pm.expect(jsonData.idBoard).to.eql(pm.environment.get(\"idBoard\"));\r",
+							"})\r",
+							"\r",
+							"pm.test(\"The card is in the list\", function() {\r",
+							"    pm.expect(jsonData.idList).to.eql(pm.environment.get(\"idList\"));\r",
+							"})\r",
+							"\r",
+							"pm.test(\"The card has no votes or attachments\", function() {\r",
+							"    pm.expect(jsonData.badges.votes).to.eql(0);\r",
+							"    pm.expect(jsonData.badges.attachmentsByType.trello.card).to.eql(0);\r",
+							"})\r",
+							"\r",
+							"pm.environment.set(\"idCard\", jsonData.id);\r",
+							""
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.environment.set(\"cardName\", \"Learn Postman\")"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://api.trello.com/1/cards?name={{cardName}}&idBoard={{idBoard}}&key={{trelloKey}}&token={{trelloToken}}&idList={{idList}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"trello",
+						"com"
+					],
+					"path": [
+						"1",
+						"cards"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "{{cardName}}"
+						},
+						{
+							"key": "idBoard",
+							"value": "{{idBoard}}"
+						},
+						{
+							"key": "key",
+							"value": "{{trelloKey}}"
+						},
+						{
+							"key": "token",
+							"value": "{{trelloToken}}"
+						},
+						{
+							"key": "idList",
+							"value": "{{idList}}"
+						}
+					]
+				},
+				"description": "Creat a card on a list and check if:\r\nstatus code = 200\r\nname of the card is Learn Postman\r\nshould not be closed\r\ntest that the card was created in the desired list\r\ntest that the card was created in the desired board\r\ntest that the card has no votes or attachments"
+			},
+			"response": []
+		},
+		{
+			"name": "Move a card to list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"The card has the expected name and is open\", function () {\r",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"cardName\"));\r",
+							"    pm.expect(jsonData.closed).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"The card is in DONE list\", function() {\r",
+							"    pm.expect(jsonData.idDoneList).to.eql(pm.environment.get(\"idDoneList\"));\r",
+							"}); \r",
+							"\r",
+							"pm.environment.unset(\"cardName\");\r",
+							"pm.environment.unset(\"idCard\");\r",
+							"pm.environment.unset(\"idList\");\r",
+							"pm.environment.unset(\"doneListId\");\r",
+							"pm.environment.unset(\"number\");\r",
+							"pm.environment.unset(\"lastNum\")\r",
+							"pm.environment.unset(\"boardNum\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "https://api.trello.com/1/cards/{{idCard}}?idList={{doneListId}}&key={{trelloKey}}&token={{trelloToken}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"trello",
+						"com"
+					],
+					"path": [
+						"1",
+						"cards",
+						"{{idCard}}"
+					],
+					"query": [
+						{
+							"key": "idList",
+							"value": "{{doneListId}}"
+						},
+						{
+							"key": "key",
+							"value": "{{trelloKey}}"
+						},
+						{
+							"key": "token",
+							"value": "{{trelloToken}}"
+						}
+					]
+				},
+				"description": "Move a card to a list using PUT request method and test if:\r\nstatus code = 200\r\nname of the card is still Learn Postman\r\nTest that the card was moved to the desired DONE list"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete board",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"The board doens't exist\", function (){",
+							"    const idBoard = pm.environment.get(\"idBoard\");",
+							"    const trelloKey = pm.environment.get(\"trelloKey\");",
+							"    const trelloToken = pm.environment.get(\"trelloToken\");",
+							"    const url = `https://api.trello.com/1/boards/${idBoard}?key=${trelloKey}&token=${trelloToken}`;",
+							"",
+							"    pm.sendRequest(url, function (err, response) {",
+							"        pm.expect(response.code).to.eql(404);",
+							"    });",
+							"});",
+							"",
+							"pm.environment.unset(\"idBoard\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://api.trello.com/1/boards/{{idBoard}}?key={{trelloKey}}&token={{trelloToken}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"trello",
+						"com"
+					],
+					"path": [
+						"1",
+						"boards",
+						"{{idBoard}}"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "{{trelloKey}}"
+						},
+						{
+							"key": "token",
+							"value": "{{trelloToken}}"
+						}
+					]
+				},
+				"description": "Delete the board"
+			},
+			"response": []
+		}
+	]
+}
