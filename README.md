@@ -8,7 +8,7 @@ Work in progress.
 
  ## Shopping List - Testing app
  
- In order to practice the manual testing with different scenarios and test cases, I tested a small app called [Shopping List](https://shopping-list-test-1.herokuapp.com/) that @susanaventura developed for me. The app has a bunch of bugs and problems that were meant for me to find. The app's repo is available in [here](https://github.com/susanaventura/shopping-list-public).
+ In order to practice the manual testing with different scenarios and test cases, I tested a small app called [Shopping List](https://shopping-list-test-1.herokuapp.com/) that @susanaventura developed for me. The app has a bunch of bugs and problems that were meant for me to find.
  
  - The specs for the app are listed in [Trello](https://trello.com/b/91IwxfVK/shopping-list).
  - The tickets that I considered valid are in the 'Done' column;
